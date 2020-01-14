@@ -35,18 +35,18 @@ def undistorted_video(path, map1, map2, roi):
 
 if __name__ == '__main__':
     ######  1.fisheye + default ######
-    train_video = 'fisheye.mp4'
-    mode = 'fisheye'
-    calibrate_choice = 'default'
-    test_video = 'fisheye_test.mp4'
-    size_test_image = (1440,1440)
-
-    ######  2.fisheye + custom  ######
     # train_video = 'fisheye.mp4'
     # mode = 'fisheye'
-    # calibrate_choice = 'custom'
+    # calibrate_choice = 'default'
     # test_video = 'fisheye_test.mp4'
     # size_test_image = (1440,1440)
+
+    ######  2.fisheye + custom  ######
+    train_video = 'fisheye.mp4'
+    mode = 'fisheye'
+    calibrate_choice = 'custom'
+    test_video = 'cam2.mp4'
+    size_test_image = (1440,1440)
 
     ######  3.normal            ######
     # train_video = 'cam.mp4'

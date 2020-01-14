@@ -1,6 +1,7 @@
 from ss_config import *
 import numpy as np
 import cv2
+import time
 
 
 class VideoStream(object):
@@ -66,7 +67,7 @@ class CalibrationTraining(object):  # 获取K和D
         objpoints = []  # 3d point in real world space
         imgpoints = []  # 2d points in image plane.
         n_useful_img = 0
-
+        s_t = time.time()
         for img in self.distort_imgs:
             if _img_shape == None:
                 _img_shape = img.shape[:2]
@@ -84,10 +85,12 @@ class CalibrationTraining(object):  # 获取K和D
                 objpoints.append(objp)
                 n_useful_img += 1
                 print("Found %d valid images for calibration" % n_useful_img)
+        print('Average time for finding corners is %.3f' % ((time.time() - s_t)/len(self.distort_imgs)))
         return objpoints, imgpoints, gray.shape[::-1], DIM
 
     def cal_KD(self):  # 视频模式
         objpoints, imgpoints, gray_shape, DIM = self.find_corners()
+        s_t = time.time()
         if self.video_mode == "fisheye":  # 鱼眼模式
             retval, K, D, rvecs, tvecs = cv2.fisheye.calibrate(
                 objpoints,
@@ -105,12 +108,14 @@ class CalibrationTraining(object):  # 获取K和D
                 gray_shape,
                 None,
                 None)
+        print('Time for calculating K,D and DIM is %.3f' % (time.time() - s_t))
         return K, D, DIM
 
     def cal_map(self):
         assert self.video_mode in ["normal", "fisheye"], "No such camera mode！"
         K, D, DIM = self.cal_KD()
         h, w = self.size_test_image
+        s_t = time.time()
         if self.video_mode == "normal":
             # h, w = self.realtime_img.shape[:2]
             new_K, roi = cv2.getOptimalNewCameraMatrix(K, D, (w, h), 1, (w, h))
@@ -138,6 +143,7 @@ class CalibrationTraining(object):  # 获取K和D
                 print(new_K)
                 map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D,
                                                                  np.eye(3), new_K, dim1, cv2.CV_16SC2)
+        print('Time for calculating map1 and map2 is %.3f' % (time.time() - s_t))
         return map1, map2, roi
 
 class UndistortVideo(object):
@@ -167,7 +173,6 @@ class UndistortVideo(object):
 
     def remap_frames(self):
         x, y, w, h = self.roi
-        print(x, y, w, h)
         undistorted_img = cv2.remap(self.realtime_img, self.map1, self.map2,
                                     interpolation=cv2.INTER_LINEAR,
                                     borderMode=cv2.BORDER_CONSTANT)
